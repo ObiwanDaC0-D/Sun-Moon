@@ -9,9 +9,9 @@ let running=false,raf=0,last=0;
 const deg=Math.PI/180, dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 const vec=(lat,lon)=>[Math.cos(lat)*Math.cos(lon),Math.cos(lat)*Math.sin(lon),Math.sin(lat)];
 const coords=()=>{const l=window.__observatoryLocation;if(l)return [l.lat,l.lon];const label=document.getElementById('place').textContent;const m=label.match(/(-?\d+(?:\.\d+)?)°?\s*,\s*(-?\d+(?:\.\d+)?)°?/);return m?[+m[1],+m[2]]:[38.415,-82.445]};
-function sunVector(time){const p=SunCalc.getPosition(new Date(time),0,0),a=p.azimuth,h=p.altitude;return [Math.sin(h),-Math.sin(a)*Math.cos(h),-Math.cos(a)*Math.cos(h)]}
+function sunVector(time){const p=SunCalc.getPosition(new Date(time),0,0),a=p.azimuth,h=p.altitude;return [Math.sin(h),-Math.sin(a)*Math.cos(h),Math.cos(a)*Math.cos(h)]}
 function render(){
-if(!explorer.open||!window.SunCalc)return;
+if(!explorer.open||!window.SunCalc||!ctx)return;
 const [lat,lon]=coords(),date=document.getElementById('date').value;
 if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;
 const [y,m,d]=date.split('-').map(Number),start=new Date(y,m-1,d).getTime(),end=new Date(y,m-1,d+1).getTime(),t=start+(end-start)*Number(slider.value)/1440;
@@ -36,7 +36,7 @@ const other=vec(-phi,mode?lambda:lambda+Math.PI);marker(other,'#f3c77a',mode?'Mi
 const homeSun=dot(n,sun);
 document.getElementById('earth-caption').textContent=new Date(t).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+' · Home: '+(homeSun>0?'Sun above geometric horizon':'Sun below geometric horizon')+(mode?' · Equatorial mirror':' · Antipode on far side');
 }
-function tick(now){if(!running)return;if(!explorer.open){stop();return}if(!last)last=now;const delta=Math.min(80,now-last);last=now;slider.value=(Number(slider.value)+delta*0.012)%1440;slider.dispatchEvent(new Event('input',{bubbles:true}));render();raf=requestAnimationFrame(tick)}
+function tick(now){if(!running)return;if(!explorer.open){stop();return}if(!last)last=now;const delta=Math.min(80,now-last);last=now;slider.value=(Number(slider.value)+delta*0.18)%1440;slider.dispatchEvent(new Event('input',{bubbles:true}));raf=requestAnimationFrame(tick)}
 function stop(){running=false;cancelAnimationFrame(raf);raf=0;last=0;play.textContent='▶ Play day';play.setAttribute('aria-pressed','false')}
 play.addEventListener('click',()=>{if(running){stop();return}running=true;play.textContent='❚❚ Pause';play.setAttribute('aria-pressed','true');raf=requestAnimationFrame(tick)});
 slider.addEventListener('input',render);
