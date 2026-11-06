@@ -65,4 +65,4 @@ $('location').addEventListener('click',()=>{let a=prompt('Latitude',lat);if(a===
 $('gps').addEventListener('click',()=>{if(!navigator.geolocation){alert('Geolocation not supported');return}navigator.geolocation.getCurrentPosition(p=>updateLocation(p.coords.latitude,p.coords.longitude,'Current location · GPS'),e=>alert('Location unavailable: '+e.message),{enableHighAccuracy:true,timeout:12000})});
 $('date').value=iso(new Date());if(window.SunCalc){outlook();render();$('status').textContent='SunCalc loaded. USNO request attempted for the selected day.'}else{$('status').textContent='SunCalc could not load. Internet access is required for calculations.';$('source').textContent='Astronomy library unavailable';}
 })();
-</script></body></html>
+</script><script src="./antipodal-explorer.js"></script></body></html>
