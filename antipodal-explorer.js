@@ -15,11 +15,11 @@ const section=document.createElement('section');section.className='panel';sectio
 </details>`;
 host.before(section);
 const el=id=>document.getElementById(id);
-let mode='antipode',lastDate='',lastLocation='',lastMode='',samples=null;
+let mode='antipode',lastLocation='',samples=null;
 const rad=Math.PI/180;
 const alt=(t,lat,lon,moon)=>{const pos=moon?SunCalc.getMoonPosition(new Date(t),lat,lon):SunCalc.getPosition(new Date(t),lat,lon);return pos.altitude/rad};
 const format=(x,n,p)=>Math.abs(x).toFixed(4)+'° '+(x>=0?p:n);
-const coordinates=()=>{const inputs=Array.from(document.querySelectorAll('main .controls input'));const date=el('date').value;let a=38.415,b=-82.445;if(window.__observatoryLocation){a=window.__observatoryLocation.lat;b=window.__observatoryLocation.lon;}
+const coordinates=()=>{const date=el('date').value;let a=38.415,b=-82.445;if(window.__observatoryLocation){a=window.__observatoryLocation.lat;b=window.__observatoryLocation.lon;}
 const label=el('place').textContent;
 const m=label.match(/(-?\d+(?:\.\d+)?)°?\s*,\s*(-?\d+(?:\.\d+)?)°?/);
 if(m&&!window.__observatoryLocation){a=Number(m[1]);b=Number(m[2])}
@@ -33,7 +33,7 @@ if(originalGeo){try{navigator.geolocation.getCurrentPosition=function(success,er
 function render(){
 if(!window.SunCalc){el('anti-readout').textContent='Astronomy library unavailable.';return}
 const {a,b,date}=coordinates();if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;
-const destLat=-a,destLon=mode==='antipode'?((b+360)%360+180)%360-180:b;
+const destLat=-a,destLon=mode==='antipode'?((b+180+540)%360)-180:b;
 el('anti-coordinates').textContent='Home: '+format(a,'S','N')+', '+format(b,'W','E')+'  ·  Comparison: '+format(destLat,'S','N')+', '+format(destLon,'W','E');
 el('anti-explanation').textContent=mode==='antipode'?'Antipode: directly opposite through Earth’s center.':'Equatorial mirror: latitude reversed, longitude unchanged.';
 const key=[date,a,b,destLon,mode].join('|');
@@ -65,7 +65,7 @@ if(key!==lastLocation){
 }
 if(key!==lastLocation){const [y,m,d]=date.split('-').map(Number);const start=new Date(y,m-1,d).getTime(),end=new Date(y,m-1,d+1).getTime();samples={start,end,lines:[false,true].flatMap(moon=>[[a,b],[destLat,destLon]].map(([lat,lon])=>Array.from({length:145},(_,i)=>alt(start+(end-start)*i/144,lat,lon,moon))))};lastLocation=key}
 const svg=el('anti-chart');svg.replaceChildren();const ns='http://www.w3.org/2000/svg';function node(tag,attrs,text){const n=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(text!=null)n.textContent=text;svg.append(n);return n}
-const x0=42,w=298,h=85,top=[22,135],range=90;
+const x0=42,w=298,h=85,top=[22,135];
 for(let row=0;row<2;row++){node('text',{x:42,y:top[row]-7,fill:'#dce9fa','font-size':12},row===0?'YOUR SKY':'COMPARISON SKY');for(const v of [-90,0,90]){const yy=top[row]+h/2-v/180*h;node('line',{x1:x0,x2:x0+w,y1:yy,y2:yy,stroke:v===0?'#8fa7bd':'#33465f','stroke-dasharray':v===0?'4 3':'none'});node('text',{x:35,y:yy+3,'text-anchor':'end',fill:'#aabbd1','font-size':9},v+'°')}
 for(let body=0;body<2;body++){const arr=samples.lines[body*2+row];const points=arr.map((v,i)=>(x0+w*i/144).toFixed(1)+','+(top[row]+h/2-v/180*h).toFixed(1)).join(' ');node('polyline',{points,fill:'none',stroke:body===0?'#f3c77a':'#cbbaff','stroke-width':2})}}
 const fraction=Number(el('anti-hour').value)/1440;const x=x0+fraction*w;for(const t of top)node('line',{x1:x,x2:x,y1:t,y2:t+h,stroke:'#88d6c8','stroke-width':1.5});
